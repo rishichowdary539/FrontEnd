@@ -18,8 +18,17 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await authAPI.login(form);
-      console.log("Login response:", response);
-      const token = response.data?.access_token;
+      console.log("Full login response:", response);
+      console.log("Response data:", response.data);
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+      
+      // Try multiple possible response structures
+      const token = response.data?.access_token || 
+                   response.data?.access_token || 
+                   response?.access_token ||
+                   (typeof response.data === 'string' ? JSON.parse(response.data)?.access_token : null);
+      
       console.log("Token extracted:", token);
       
       if (token) {
@@ -30,11 +39,14 @@ const Login = () => {
           navigate("/dashboard", { replace: true });
         }, 100);
       } else {
-        setError("No token received from server");
+        console.error("Token not found. Response structure:", JSON.stringify(response.data, null, 2));
+        setError("No token received from server. Check console for details.");
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError(err.response?.data?.detail || "Login failed");
+      console.error("Error response:", err.response);
+      console.error("Error data:", err.response?.data);
+      setError(err.response?.data?.detail || err.message || "Login failed");
     } finally {
       setLoading(false);
     }
