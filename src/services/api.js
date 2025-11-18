@@ -4,13 +4,45 @@ const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api",
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Request interceptor - Add token to all requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    // Ensure headers object exists
+    if (!config.headers) {
+      config.headers = {};
+    }
+    // Set Content-Type if not already set
+    if (!config.headers["Content-Type"] && config.data) {
+      config.headers["Content-Type"] = "application/json";
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
+// Response interceptor - Handle 401 errors (unauthorized)
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token is invalid or expired
+      localStorage.removeItem("token");
+      // Redirect to login page
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const authAPI = {
   register: (payload) => api.post("/auth/register", payload),

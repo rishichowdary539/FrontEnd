@@ -10,6 +10,14 @@ const Report = () => {
   const [error, setError] = useState("");
 
   const fetchReport = async () => {
+    // Check if token exists
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Not authenticated. Please login again.");
+      setTimeout(() => window.location.href = "/login", 2000);
+      return;
+    }
+    
     setLoading(true);
     setError("");
     try {
@@ -17,7 +25,13 @@ const Report = () => {
       setReport(data);
     } catch (err) {
       setReport(null);
-      setError(err.response?.data?.detail || "No report available for this month.");
+      if (err.response?.status === 401) {
+        setError("Authentication failed. Redirecting to login...");
+        localStorage.removeItem("token");
+        setTimeout(() => window.location.href = "/login", 2000);
+      } else {
+        setError(err.response?.data?.detail || "No report available for this month.");
+      }
     } finally {
       setLoading(false);
     }

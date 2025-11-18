@@ -22,12 +22,27 @@ const AddExpense = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ message: "", variant: "" });
+    
+    // Check if token exists
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setStatus({ message: "Not authenticated. Please login again.", variant: "danger" });
+      setTimeout(() => navigate("/login"), 2000);
+      return;
+    }
+    
     try {
       await expenseAPI.add({ ...form, amount: Number(form.amount) });
       setStatus({ message: "Expense saved!", variant: "success" });
       setTimeout(() => navigate("/dashboard"), 1000);
     } catch (err) {
-      setStatus({ message: err.response?.data?.detail || "Unable to save expense", variant: "danger" });
+      if (err.response?.status === 401) {
+        setStatus({ message: "Authentication failed. Please login again.", variant: "danger" });
+        localStorage.removeItem("token");
+        setTimeout(() => navigate("/login"), 2000);
+      } else {
+        setStatus({ message: err.response?.data?.detail || "Unable to save expense", variant: "danger" });
+      }
     }
   };
 

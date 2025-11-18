@@ -13,14 +13,28 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Check if token exists
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Not authenticated. Redirecting to login...");
+        setTimeout(() => window.location.href = "/login", 2000);
+        return;
+      }
+      
       setLoading(true);
       setError("");
       try {
         const { data } = await expenseAPI.listByMonth(month);
         setData(data);
       } catch (err) {
-        setError(err.response?.data?.detail || "Unable to fetch expenses");
-        setData({ expenses: [], summary: null });
+        if (err.response?.status === 401) {
+          setError("Authentication failed. Redirecting to login...");
+          localStorage.removeItem("token");
+          setTimeout(() => window.location.href = "/login", 2000);
+        } else {
+          setError(err.response?.data?.detail || "Unable to fetch expenses");
+          setData({ expenses: [], summary: null });
+        }
       } finally {
         setLoading(false);
       }
