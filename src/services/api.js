@@ -9,14 +9,15 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
     if (token) {
+      // Ensure headers object exists
+      if (!config.headers) {
+        config.headers = {};
+      }
+      // Always set Authorization header
       config.headers.Authorization = `Bearer ${token}`;
     }
-    // Ensure headers object exists
-    if (!config.headers) {
-      config.headers = {};
-    }
     // Set Content-Type if not already set
-    if (!config.headers["Content-Type"] && config.data) {
+    if (!config.headers["Content-Type"] && config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
       config.headers["Content-Type"] = "application/json";
     }
     return config;
