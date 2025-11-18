@@ -17,10 +17,23 @@ const Login = () => {
     setError("");
     setLoading(true);
     try {
-      const { data } = await authAPI.login(form);
-      localStorage.setItem("token", data.access_token);
-      navigate("/dashboard");
+      const response = await authAPI.login(form);
+      console.log("Login response:", response);
+      const token = response.data?.access_token;
+      console.log("Token extracted:", token);
+      
+      if (token) {
+        localStorage.setItem("token", token);
+        console.log("Token stored in localStorage");
+        // Force navigation with a small delay to ensure token is stored
+        setTimeout(() => {
+          navigate("/dashboard", { replace: true });
+        }, 100);
+      } else {
+        setError("No token received from server");
+      }
     } catch (err) {
+      console.error("Login error:", err);
       setError(err.response?.data?.detail || "Login failed");
     } finally {
       setLoading(false);
