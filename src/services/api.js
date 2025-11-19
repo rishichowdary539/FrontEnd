@@ -61,5 +61,22 @@ export const reportAPI = {
   fetchMonthly: (month) => api.get(`/reports/monthly/${month}`),
 };
 
+export const lambdaAPI = {
+  trigger: () => api.post("/lambda/trigger"),
+  status: () => api.get("/lambda/status"),
+};
+
+export const notificationsAPI = {
+  getCurrent: () => api.get("/notifications/"),
+  getByMonth: (month) => api.get(`/notifications/${month}`),
+};
+
+export const settingsAPI = {
+  getScheduler: () => api.get("/settings/scheduler"),
+  startScheduler: () => api.post("/settings/scheduler/start"),
+  stopScheduler: () => api.post("/settings/scheduler/stop"),
+  updateSchedule: (schedule) => api.put("/settings/scheduler/schedule", schedule),
+};
+
 export default api;
 

@@ -5,6 +5,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AddExpense from "./pages/AddExpense";
 import Report from "./pages/Report";
+import Lambda from "./pages/Lambda";
+import Settings from "./pages/Settings";
 
 const isAuthenticated = () => {
   return !!localStorage.getItem("token");
@@ -28,6 +30,14 @@ function App() {
         <Route
           path="/report"
           element={isAuthenticated() ? <Report /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/lambda"
+          element={isAuthenticated() ? <Lambda /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/settings"
+          element={isAuthenticated() ? <Settings /> : <Navigate to="/login" />}
         />
       </Routes>
     </Router>

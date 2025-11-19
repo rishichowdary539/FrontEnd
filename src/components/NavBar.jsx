@@ -19,6 +19,8 @@ const NavBar = () => {
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/add">Add Expense</Link>
         <Link to="/report">Monthly Reports</Link>
+        <Link to="/lambda">Lambda</Link>
+        <Link to="/settings">Settings</Link>
       </nav>
       <button
         onClick={handleLogout}
