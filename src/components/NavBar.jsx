@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { authAPI } from "../services/api";
+import { authAPI, notificationsAPI } from "../services/api";
+import NotificationCenter from "./NotificationCenter";
 
 const NavBar = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
     // Try to get user from localStorage first
@@ -47,6 +50,27 @@ const NavBar = () => {
     fetchUser();
   }, []);
 
+  useEffect(() => {
+    // Fetch notification count
+    const fetchNotificationCount = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+        const response = await notificationsAPI.getByMonth(currentMonth);
+        setNotificationCount(response.data?.count || 0);
+      } catch (err) {
+        console.error("Error fetching notification count:", err);
+      }
+    };
+
+    fetchNotificationCount();
+    // Refresh notification count every 30 seconds
+    const interval = setInterval(fetchNotificationCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -71,55 +95,7 @@ const NavBar = () => {
         <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}>Smart Expense Tracker</h2>
         <p style={{ margin: "0.25rem 0 0 0", color: "var(--muted)", fontSize: "0.875rem" }}>Finance & Economic Cloud Project</p>
       </div>
-      {!loading && user && (
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
-          padding: "0.5rem 1rem",
-          background: "#f8fafc",
-          borderRadius: "8px",
-          marginLeft: "auto",
-          marginRight: "1rem",
-        }}>
-          {user.profile_image_url ? (
-            <img
-              src={user.profile_image_url}
-              alt={getUsername(user.email)}
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                objectFit: "cover",
-              }}
-            />
-          ) : (
-            <div style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              background: "var(--primary)",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 600,
-              fontSize: "0.875rem",
-            }}>
-              {getUsername(user.email).charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "#0f172a" }}>
-              {getUsername(user.email)}
-            </span>
-            <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
-              {user.email}
-            </span>
-          </div>
-        </div>
-      )}
-      <nav style={{ marginLeft: user ? "0" : "auto", display: "flex", gap: "0.5rem", alignItems: "center" }}>
+      <nav style={{ marginLeft: "auto", display: "flex", gap: "0.5rem", alignItems: "center" }}>
         <Link 
           to="/dashboard" 
           style={{
@@ -205,6 +181,42 @@ const NavBar = () => {
           Settings
         </Link>
       </nav>
+      <button
+        onClick={() => setShowNotifications(!showNotifications)}
+        style={{
+          padding: "0.5rem 1rem",
+          borderRadius: "8px",
+          border: "none",
+          background: notificationCount > 0 ? "var(--danger)" : "var(--primary)",
+          color: "#fff",
+          cursor: "pointer",
+          fontWeight: 600,
+          fontSize: "0.9rem",
+          transition: "all 0.2s",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          position: "relative",
+        }}
+      >
+        Notifications
+        {notificationCount > 0 && (
+          <span style={{
+            background: "#fff",
+            color: notificationCount > 0 ? "var(--danger)" : "var(--primary)",
+            borderRadius: "50%",
+            width: "20px",
+            height: "20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "0.75rem",
+            fontWeight: 700,
+          }}>
+            {notificationCount}
+          </span>
+        )}
+      </button>
       {!loading && user && (
         <div style={{
           display: "flex",
@@ -271,6 +283,9 @@ const NavBar = () => {
       >
         Logout
       </button>
+      {showNotifications && (
+        <NotificationCenter month={new Date().toISOString().slice(0, 7)} onClose={() => setShowNotifications(false)} />
+      )}
     </header>
   );
 };

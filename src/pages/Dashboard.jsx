@@ -3,8 +3,7 @@ import { format, subMonths } from "date-fns";
 import NavBar from "../components/NavBar";
 import StatCards from "../components/StatCards";
 import ExpenseChart from "../components/ExpenseChart";
-import NotificationCenter from "../components/NotificationCenter";
-import { expenseAPI, notificationsAPI } from "../services/api";
+import { expenseAPI } from "../services/api";
 
 const categories = ["Food", "Travel", "Rent", "Shopping", "Utilities", "Health", "Entertainment", "Misc"];
 
@@ -15,8 +14,6 @@ const Dashboard = () => {
   const [error, setError] = useState("");
   const [editingExpense, setEditingExpense] = useState(null);
   const [editForm, setEditForm] = useState({ category: "", amount: "", description: "", timestamp: "" });
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,15 +34,6 @@ const Dashboard = () => {
           expenses: responseData.expenses || [],
           summary: responseData.summary || null
         });
-        
-        // Fetch notification count
-        try {
-          const notifResponse = await notificationsAPI.getByMonth(month);
-          const notifCount = notifResponse.data?.count || 0;
-          setNotificationCount(notifCount);
-        } catch (notifErr) {
-          console.error("Error fetching notifications:", notifErr);
-        }
       } catch (err) {
         if (err.response?.status === 401) {
           setError("Authentication failed. Redirecting to login...");
@@ -101,9 +89,6 @@ const Dashboard = () => {
         expenses: responseData.expenses || [],
         summary: responseData.summary || null
       });
-      // Refresh notification count
-      const notifResponse = await notificationsAPI.getByMonth(month);
-      setNotificationCount(notifResponse.data?.count || 0);
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to update expense");
     }
@@ -122,9 +107,6 @@ const Dashboard = () => {
         expenses: responseData.expenses || [],
         summary: responseData.summary || null
       });
-      // Refresh notification count
-      const notifResponse = await notificationsAPI.getByMonth(month);
-      setNotificationCount(notifResponse.data?.count || 0);
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to delete expense");
     }
@@ -134,54 +116,49 @@ const Dashboard = () => {
     <div className="page">
       <NavBar />
 
-      <section style={{ marginTop: "2rem", display: "flex", alignItems: "center", gap: "1rem", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+      <section style={{ marginTop: "2rem", maxWidth: "1400px", margin: "2rem auto 0" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
           <button onClick={() => handleRangeChange("prev")} style={navButton}>&larr;</button>
-          <h2 style={{ margin: 0 }}>{format(new Date(`${month}-01T00:00:00`), "MMMM yyyy")}</h2>
+          <h2 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 700 }}>{format(new Date(`${month}-01T00:00:00`), "MMMM yyyy")}</h2>
           <button onClick={() => handleRangeChange("next")} style={navButton}>&rarr;</button>
         </div>
-        <button
-          onClick={() => setShowNotifications(!showNotifications)}
-          style={{
-            ...notificationButtonStyle,
-            background: notificationCount > 0 ? "var(--danger)" : "var(--primary)",
-          }}
-        >
-          🔔 Notifications
-          {notificationCount > 0 && (
-            <span style={badgeStyle}>{notificationCount}</span>
-          )}
-        </button>
-      </section>
 
-      {showNotifications && (
-        <NotificationCenter month={month} onClose={() => setShowNotifications(false)} />
-      )}
-
-      {loading ? (
-        <p>Loading analytics...</p>
-      ) : error ? (
-        <p style={{ color: "var(--danger)" }}>{error}</p>
-      ) : (
-        <>
-          <StatCards summary={data.summary} />
-          <div style={{ marginTop: "1.5rem", display: "grid", gap: "1rem", gridTemplateColumns: "2fr 1fr" }}>
-            <ExpenseChart summary={data.summary} />
-            <div className="card">
-              <h3 style={{ marginTop: 0 }}>Overspending Alerts</h3>
-              {Object.entries(data.summary?.overspending_categories || {}).length === 0 ? (
-                <p>Great job! You're within budgets for all categories.</p>
-              ) : (
-                <ul>
-                  {Object.entries(data.summary.overspending_categories).map(([category, amount]) => (
-                    <li key={category}>
-                      <strong>{category}</strong>: €{amount.toFixed(2)}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+        {loading ? (
+          <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
+            <p style={{ color: "#64748b", margin: 0 }}>Loading analytics...</p>
           </div>
+        ) : error ? (
+          <div className="card" style={{ background: "#fef2f2", border: "1px solid #fca5a5" }}>
+            <p style={{ color: "var(--danger)", margin: 0 }}>{error}</p>
+          </div>
+        ) : (
+          <>
+            <StatCards summary={data.summary} />
+            <div style={{ marginTop: "1.5rem", display: "grid", gap: "1.5rem", gridTemplateColumns: "2fr 1fr" }}>
+              <ExpenseChart summary={data.summary} />
+              <div className="card">
+                <h3 style={{ margin: "0 0 1rem 0", fontSize: "1.25rem", fontWeight: 600 }}>Overspending Alerts</h3>
+                {Object.entries(data.summary?.overspending_categories || {}).length === 0 ? (
+                  <p style={{ color: "#64748b", margin: 0 }}>Great job! You're within budgets for all categories.</p>
+                ) : (
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                    {Object.entries(data.summary.overspending_categories).map(([category, amount]) => (
+                      <li key={category} style={{
+                        padding: "0.875rem 1rem",
+                        background: "#fef2f2",
+                        borderRadius: "8px",
+                        border: "1px solid #fca5a5",
+                      }}>
+                        <div style={{ fontWeight: 600, marginBottom: "0.25rem", color: "#dc2626" }}>{category}</div>
+                        <div style={{ fontSize: "0.875rem", color: "#64748b" }}>
+                          €{Number(amount).toFixed(2)} over budget
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
 
           <div className="card" style={{ marginTop: "1.5rem" }}>
             <h3 style={{ marginTop: 0, marginBottom: "1.25rem", fontSize: "1.25rem", fontWeight: 600 }}>Latest Expenses</h3>
@@ -284,9 +261,10 @@ const Dashboard = () => {
                 </tbody>
               </table>
             </div>
-          </div>
-        </>
-      )}
+            </div>
+          </>
+        )}
+      </section>
     </div>
   );
 };
@@ -322,33 +300,6 @@ const actionButtonStyle = {
   fontSize: "0.875rem",
   fontWeight: 500,
   transition: "all 0.2s",
-};
-
-const notificationButtonStyle = {
-  padding: "0.6rem 1.2rem",
-  borderRadius: 999,
-  border: "none",
-  color: "#fff",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "0.9rem",
-  display: "flex",
-  alignItems: "center",
-  gap: "0.5rem",
-  position: "relative",
-};
-
-const badgeStyle = {
-  background: "#fff",
-  color: "var(--danger)",
-  borderRadius: "50%",
-  width: "20px",
-  height: "20px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: "0.75rem",
-  fontWeight: 700,
 };
 
 export default Dashboard;
