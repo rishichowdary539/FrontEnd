@@ -32,16 +32,21 @@ const AddExpense = () => {
     }
     
     try {
-      await expenseAPI.add({ ...form, amount: Number(form.amount) });
+      console.log("Sending expense data:", { ...form, amount: Number(form.amount) });
+      const response = await expenseAPI.add({ ...form, amount: Number(form.amount) });
+      console.log("Expense saved response:", response);
       setStatus({ message: "Expense saved!", variant: "success" });
       setTimeout(() => navigate("/dashboard"), 1000);
     } catch (err) {
+      console.error("Error saving expense:", err);
+      console.error("Error response:", err.response);
+      console.error("Error data:", err.response?.data);
       if (err.response?.status === 401) {
         setStatus({ message: "Authentication failed. Please login again.", variant: "danger" });
         localStorage.removeItem("token");
         setTimeout(() => navigate("/login"), 2000);
       } else {
-        setStatus({ message: err.response?.data?.detail || "Unable to save expense", variant: "danger" });
+        setStatus({ message: err.response?.data?.detail || err.message || "Unable to save expense", variant: "danger" });
       }
     }
   };

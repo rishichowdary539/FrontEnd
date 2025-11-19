@@ -34,10 +34,8 @@ const Login = () => {
       if (token) {
         localStorage.setItem("token", token);
         console.log("Token stored in localStorage");
-        // Force navigation with a small delay to ensure token is stored
-        setTimeout(() => {
-          navigate("/dashboard", { replace: true });
-        }, 100);
+        // Use window.location for hard navigation to ensure auth check works
+        window.location.href = "/dashboard";
       } else {
         console.error("Token not found. Response structure:", JSON.stringify(response.data, null, 2));
         setError("No token received from server. Check console for details.");

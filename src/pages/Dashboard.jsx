@@ -24,8 +24,12 @@ const Dashboard = () => {
       setLoading(true);
       setError("");
       try {
-        const { data } = await expenseAPI.listByMonth(month);
-        setData(data);
+        const response = await expenseAPI.listByMonth(month);
+        const responseData = response.data || {};
+        setData({
+          expenses: responseData.expenses || [],
+          summary: responseData.summary || null
+        });
       } catch (err) {
         if (err.response?.status === 401) {
           setError("Authentication failed. Redirecting to login...");
@@ -96,15 +100,16 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {data.expenses.map((expense) => (
-                  <tr key={expense.expense_id}>
-                    <td>{expense.category}</td>
-                    <td>€{Number(expense.amount).toFixed(2)}</td>
-                    <td>{expense.description || "-"}</td>
-                    <td>{new Date(expense.timestamp).toLocaleString()}</td>
-                  </tr>
-                ))}
-                {!data.expenses.length && (
+                {data.expenses && data.expenses.length > 0 ? (
+                  data.expenses.map((expense) => (
+                    <tr key={expense.expense_id}>
+                      <td>{expense.category}</td>
+                      <td>€{Number(expense.amount).toFixed(2)}</td>
+                      <td>{expense.description || "-"}</td>
+                      <td>{new Date(expense.timestamp).toLocaleString()}</td>
+                    </tr>
+                  ))
+                ) : (
                   <tr>
                     <td colSpan={4} style={{ textAlign: "center", padding: "1rem" }}>
                       No expenses recorded for this month.

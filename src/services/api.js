@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api",
+  baseURL: process.env.REACT_APP_API_BASE_URL || "https://6ublq85ap1.execute-api.eu-west-1.amazonaws.com/api",
 });
 
 // Request interceptor - Add token to all requests
@@ -47,17 +47,7 @@ api.interceptors.response.use(
 
 export const authAPI = {
   register: (payload) => api.post("/auth/register", payload),
-  login: (payload) =>
-    api.post(
-      "/auth/login",
-      new URLSearchParams({
-        username: payload.email,
-        password: payload.password,
-      }),
-      {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      },
-    ),
+  login: (payload) => api.post("/auth/login", { email: payload.email, password: payload.password }),
 };
 
 export const expenseAPI = {
