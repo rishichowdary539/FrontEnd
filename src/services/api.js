@@ -48,6 +48,7 @@ api.interceptors.response.use(
 export const authAPI = {
   register: (payload) => api.post("/auth/register", payload),
   login: (payload) => api.post("/auth/login", { email: payload.email, password: payload.password }),
+  getCurrentUser: () => api.get("/auth/me"),
 };
 
 export const expenseAPI = {
@@ -76,6 +77,8 @@ export const settingsAPI = {
   startScheduler: () => api.post("/settings/scheduler/start"),
   stopScheduler: () => api.post("/settings/scheduler/stop"),
   updateSchedule: (schedule) => api.put("/settings/scheduler/schedule", schedule),
+  getThresholds: () => api.get("/settings/thresholds"),
+  updateThresholds: (thresholds) => api.put("/settings/thresholds", { thresholds }),
 };
 
 export default api;

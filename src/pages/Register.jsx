@@ -19,7 +19,11 @@ const Register = () => {
     setSuccess("");
     setLoading(true);
     try {
-      await authAPI.register(form);
+      const response = await authAPI.register(form);
+      // Store user info if available
+      if (response.data) {
+        localStorage.setItem("user", JSON.stringify(response.data));
+      }
       setSuccess("Account created! Redirecting to login...");
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
@@ -30,67 +34,121 @@ const Register = () => {
   };
 
   return (
-    <div className="page" style={{ display: "grid", placeItems: "center" }}>
+    <div className="page" style={{ display: "grid", placeItems: "center", minHeight: "calc(100vh - 4rem)" }}>
       <form className="card" style={{ width: "100%", maxWidth: 420 }} onSubmit={handleSubmit}>
-        <h2>Create your account</h2>
-        <p style={{ color: "var(--muted)" }}>Securely store and analyze your expenses</p>
+        <h2 style={{ margin: "0 0 0.5rem 0", fontSize: "1.75rem", fontWeight: 700 }}>Create your account</h2>
+        <p style={{ color: "var(--muted)", margin: "0 0 2rem 0", fontSize: "0.95rem" }}>Securely store and analyze your expenses</p>
 
-        <label>Email</label>
-        <input
-          name="email"
-          type="email"
-          required
-          value={form.email}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "0.8rem", borderRadius: 12, border: "1px solid #e2e8f0" }}
-        />
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <label style={labelStyle}>
+            <span style={labelTextStyle}>Email</span>
+            <input
+              name="email"
+              type="email"
+              required
+              value={form.email}
+              onChange={handleChange}
+              style={inputStyle}
+              placeholder="you@example.com"
+            />
+          </label>
 
-        <label style={{ marginTop: "1rem" }}>Password</label>
-        <input
-          name="password"
-          type="password"
-          required
-          minLength={6}
-          value={form.password}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "0.8rem", borderRadius: 12, border: "1px solid #e2e8f0" }}
-        />
+          <label style={labelStyle}>
+            <span style={labelTextStyle}>Password</span>
+            <input
+              name="password"
+              type="password"
+              required
+              minLength={6}
+              value={form.password}
+              onChange={handleChange}
+              style={inputStyle}
+              placeholder="Minimum 6 characters"
+            />
+          </label>
 
-        {error && (
-          <p style={{ color: "var(--danger)", marginTop: "0.5rem" }}>
-            {error}
+          {error && (
+            <div style={{
+              padding: "0.875rem 1rem",
+              borderRadius: "8px",
+              background: "#fef2f2",
+              border: "1px solid #fca5a5",
+              color: "var(--danger)",
+              fontSize: "0.9rem",
+              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}>
+              <span>{error}</span>
+            </div>
+          )}
+          {success && (
+            <div style={{
+              padding: "0.875rem 1rem",
+              borderRadius: "8px",
+              background: "#f0fdf4",
+              border: "1px solid #86efac",
+              color: "#16a34a",
+              fontSize: "0.9rem",
+              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}>
+              <span>{success}</span>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "0.875rem 1.5rem",
+              borderRadius: "8px",
+              border: "none",
+              background: loading ? "#cbd5e1" : "var(--primary)",
+              color: "#fff",
+              cursor: loading ? "not-allowed" : "pointer",
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              transition: "all 0.2s",
+              opacity: loading ? 0.6 : 1,
+            }}
+          >
+            {loading ? "Creating account..." : "Register"}
+          </button>
+
+          <p style={{ textAlign: "center", margin: 0, color: "#64748b", fontSize: "0.9rem" }}>
+            Already have an account? <Link to="/login" style={{ color: "var(--primary)", fontWeight: 500 }}>Login</Link>
           </p>
-        )}
-        {success && (
-          <p style={{ color: "var(--success)", marginTop: "0.5rem" }}>
-            {success}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            marginTop: "1.5rem",
-            width: "100%",
-            padding: "0.85rem",
-            borderRadius: 999,
-            border: "none",
-            background: "var(--primary)",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
-          {loading ? "Creating account..." : "Register"}
-        </button>
-
-        <p style={{ textAlign: "center", marginTop: "1rem" }}>
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
+        </div>
       </form>
     </div>
   );
+};
+
+const labelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.5rem",
+};
+
+const labelTextStyle = {
+  fontSize: "0.875rem",
+  fontWeight: 500,
+  color: "#475569",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "0.75rem 1rem",
+  borderRadius: "8px",
+  border: "1px solid #e2e8f0",
+  fontSize: "0.95rem",
+  transition: "all 0.2s",
+  outline: "none",
 };
 
 export default Register;

@@ -184,96 +184,106 @@ const Dashboard = () => {
           </div>
 
           <div className="card" style={{ marginTop: "1.5rem" }}>
-            <h3 style={{ marginTop: 0 }}>Latest Expenses</h3>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ textAlign: "left" }}>
-                  <th>Category</th>
-                  <th>Amount</th>
-                  <th>Description</th>
-                  <th>Timestamp</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.expenses && data.expenses.length > 0 ? (
-                  data.expenses.map((expense) => (
-                    <tr key={expense.expense_id}>
-                      {editingExpense === expense.expense_id ? (
-                        <>
-                          <td>
-                            <select
-                              value={editForm.category}
-                              onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                              style={tableInputStyle}
-                            >
-                              {categories.map((cat) => (
-                                <option key={cat} value={cat}>{cat}</option>
-                              ))}
-                            </select>
-                          </td>
-                          <td>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={editForm.amount}
-                              onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
-                              style={tableInputStyle}
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              value={editForm.description}
-                              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                              style={tableInputStyle}
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="datetime-local"
-                              value={editForm.timestamp}
-                              onChange={(e) => setEditForm({ ...editForm, timestamp: e.target.value })}
-                              style={tableInputStyle}
-                            />
-                          </td>
-                          <td>
-                            <button onClick={() => handleSaveEdit(expense.expense_id)} style={actionButtonStyle}>
-                              Save
-                            </button>
-                            <button onClick={handleCancelEdit} style={{ ...actionButtonStyle, background: "#ef4444" }}>
-                              Cancel
-                            </button>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td>{expense.category}</td>
-                          <td>€{Number(expense.amount).toFixed(2)}</td>
-                          <td>{expense.description || "-"}</td>
-                          <td>{new Date(expense.timestamp).toLocaleString()}</td>
-                          <td>
-                            <button onClick={() => handleEdit(expense)} style={actionButtonStyle}>
-                              Edit
-                            </button>
-                            <button onClick={() => handleDelete(expense.expense_id)} style={{ ...actionButtonStyle, background: "#ef4444" }}>
-                              Delete
-                            </button>
-                          </td>
-                        </>
-                      )}
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} style={{ textAlign: "center", padding: "1rem" }}>
-                      No expenses recorded for this month.
-                    </td>
+            <h3 style={{ marginTop: 0, marginBottom: "1.25rem", fontSize: "1.25rem", fontWeight: 600 }}>Latest Expenses</h3>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ textAlign: "left", borderBottom: "2px solid #e2e8f0" }}>
+                    <th style={{ padding: "0.75rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 600, color: "#64748b", letterSpacing: "0.05em" }}>Category</th>
+                    <th style={{ padding: "0.75rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 600, color: "#64748b", letterSpacing: "0.05em" }}>Amount</th>
+                    <th style={{ padding: "0.75rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 600, color: "#64748b", letterSpacing: "0.05em" }}>Description</th>
+                    <th style={{ padding: "0.75rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 600, color: "#64748b", letterSpacing: "0.05em" }}>Timestamp</th>
+                    <th style={{ padding: "0.75rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 600, color: "#64748b", letterSpacing: "0.05em" }}>Actions</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.expenses && data.expenses.length > 0 ? (
+                    data.expenses.map((expense, index) => (
+                      <tr 
+                        key={expense.expense_id}
+                        style={{
+                          borderBottom: index < data.expenses.length - 1 ? "1px solid #f1f5f9" : "none",
+                          transition: "background 0.2s",
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "#f8fafc"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                      >
+                        {editingExpense === expense.expense_id ? (
+                          <>
+                            <td style={{ padding: "1rem" }}>
+                              <select
+                                value={editForm.category}
+                                onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                                style={tableInputStyle}
+                              >
+                                {categories.map((cat) => (
+                                  <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td style={{ padding: "1rem" }}>
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={editForm.amount}
+                                onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
+                                style={tableInputStyle}
+                              />
+                            </td>
+                            <td style={{ padding: "1rem" }}>
+                              <input
+                                type="text"
+                                value={editForm.description}
+                                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                                style={tableInputStyle}
+                              />
+                            </td>
+                            <td style={{ padding: "1rem" }}>
+                              <input
+                                type="datetime-local"
+                                value={editForm.timestamp}
+                                onChange={(e) => setEditForm({ ...editForm, timestamp: e.target.value })}
+                                style={tableInputStyle}
+                              />
+                            </td>
+                            <td style={{ padding: "1rem" }}>
+                              <button onClick={() => handleSaveEdit(expense.expense_id)} style={actionButtonStyle}>
+                                Save
+                              </button>
+                              <button onClick={handleCancelEdit} style={{ ...actionButtonStyle, background: "#ef4444" }}>
+                                Cancel
+                              </button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td style={{ padding: "1rem", fontWeight: 500 }}>{expense.category}</td>
+                            <td style={{ padding: "1rem", fontWeight: 600, color: "var(--primary)" }}>€{Number(expense.amount).toFixed(2)}</td>
+                            <td style={{ padding: "1rem", color: "#64748b" }}>{expense.description || "-"}</td>
+                            <td style={{ padding: "1rem", color: "#64748b", fontSize: "0.9rem" }}>{new Date(expense.timestamp).toLocaleString()}</td>
+                            <td style={{ padding: "1rem" }}>
+                              <button onClick={() => handleEdit(expense)} style={actionButtonStyle}>
+                                Edit
+                              </button>
+                              <button onClick={() => handleDelete(expense.expense_id)} style={{ ...actionButtonStyle, background: "#ef4444" }}>
+                                Delete
+                              </button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: "center", padding: "3rem", color: "#64748b" }}>
+                        No expenses recorded for this month.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}
@@ -293,21 +303,25 @@ const navButton = {
 
 const tableInputStyle = {
   width: "100%",
-  padding: "0.5rem",
-  borderRadius: 6,
+  padding: "0.5rem 0.75rem",
+  borderRadius: "6px",
   border: "1px solid #e2e8f0",
-  fontSize: "0.9rem",
+  fontSize: "0.875rem",
+  transition: "all 0.2s",
+  outline: "none",
 };
 
 const actionButtonStyle = {
-  padding: "0.4rem 0.8rem",
-  borderRadius: 6,
+  padding: "0.5rem 1rem",
+  borderRadius: "6px",
   border: "none",
   background: "var(--primary)",
   color: "#fff",
   cursor: "pointer",
   marginRight: "0.5rem",
-  fontSize: "0.85rem",
+  fontSize: "0.875rem",
+  fontWeight: 500,
+  transition: "all 0.2s",
 };
 
 const notificationButtonStyle = {

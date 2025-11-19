@@ -23,17 +23,24 @@ const Login = () => {
       console.log("Response status:", response.status);
       console.log("Response headers:", response.headers);
       
-      // Try multiple possible response structures
+      // Extract token and user info
       const token = response.data?.access_token || 
                    response.data?.access_token || 
                    response?.access_token ||
                    (typeof response.data === 'string' ? JSON.parse(response.data)?.access_token : null);
       
+      const user = response.data?.user;
+      
       console.log("Token extracted:", token);
+      console.log("User info:", user);
       
       if (token) {
         localStorage.setItem("token", token);
-        console.log("Token stored in localStorage");
+        // Store user info if available
+        if (user) {
+          localStorage.setItem("user", JSON.stringify(user));
+        }
+        console.log("Token and user info stored in localStorage");
         // Use window.location for hard navigation to ensure auth check works
         window.location.href = "/dashboard";
       } else {
@@ -51,61 +58,104 @@ const Login = () => {
   };
 
   return (
-    <div className="page" style={{ display: "grid", placeItems: "center" }}>
+    <div className="page" style={{ display: "grid", placeItems: "center", minHeight: "calc(100vh - 4rem)" }}>
       <form className="card" style={{ width: "100%", maxWidth: 420 }} onSubmit={handleSubmit}>
-        <h2>Welcome back</h2>
-        <p style={{ color: "var(--muted)" }}>Track your finances securely</p>
+        <h2 style={{ margin: "0 0 0.5rem 0", fontSize: "1.75rem", fontWeight: 700 }}>Welcome back</h2>
+        <p style={{ color: "var(--muted)", margin: "0 0 2rem 0", fontSize: "0.95rem" }}>Track your finances securely</p>
 
-        <label>Email</label>
-        <input
-          name="email"
-          type="email"
-          required
-          value={form.email}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "0.8rem", borderRadius: 12, border: "1px solid #e2e8f0" }}
-        />
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <label style={labelStyle}>
+            <span style={labelTextStyle}>Email</span>
+            <input
+              name="email"
+              type="email"
+              required
+              value={form.email}
+              onChange={handleChange}
+              style={inputStyle}
+              placeholder="you@example.com"
+            />
+          </label>
 
-        <label style={{ marginTop: "1rem" }}>Password</label>
-        <input
-          name="password"
-          type="password"
-          required
-          value={form.password}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "0.8rem", borderRadius: 12, border: "1px solid #e2e8f0" }}
-        />
+          <label style={labelStyle}>
+            <span style={labelTextStyle}>Password</span>
+            <input
+              name="password"
+              type="password"
+              required
+              value={form.password}
+              onChange={handleChange}
+              style={inputStyle}
+              placeholder="Enter your password"
+            />
+          </label>
 
-        {error && (
-          <p style={{ color: "var(--danger)", marginTop: "0.5rem" }}>
-            {error}
+          {error && (
+            <div style={{
+              padding: "0.875rem 1rem",
+              borderRadius: "8px",
+              background: "#fef2f2",
+              border: "1px solid #fca5a5",
+              color: "var(--danger)",
+              fontSize: "0.9rem",
+              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "0.875rem 1.5rem",
+              borderRadius: "8px",
+              border: "none",
+              background: loading ? "#cbd5e1" : "var(--primary)",
+              color: "#fff",
+              cursor: loading ? "not-allowed" : "pointer",
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              transition: "all 0.2s",
+              opacity: loading ? 0.6 : 1,
+            }}
+          >
+            {loading ? "Signing in..." : "Login"}
+          </button>
+
+          <p style={{ textAlign: "center", margin: 0, color: "#64748b", fontSize: "0.9rem" }}>
+            New user? <Link to="/register" style={{ color: "var(--primary)", fontWeight: 500 }}>Create an account</Link>
           </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            marginTop: "1.5rem",
-            width: "100%",
-            padding: "0.85rem",
-            borderRadius: 999,
-            border: "none",
-            background: "var(--primary)",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
-          {loading ? "Signing in..." : "Login"}
-        </button>
-
-        <p style={{ textAlign: "center", marginTop: "1rem" }}>
-          New user? <Link to="/register">Create an account</Link>
-        </p>
+        </div>
       </form>
     </div>
   );
+};
+
+const labelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.5rem",
+};
+
+const labelTextStyle = {
+  fontSize: "0.875rem",
+  fontWeight: 500,
+  color: "#475569",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "0.75rem 1rem",
+  borderRadius: "8px",
+  border: "1px solid #e2e8f0",
+  fontSize: "0.95rem",
+  transition: "all 0.2s",
+  outline: "none",
 };
 
 export default Login;

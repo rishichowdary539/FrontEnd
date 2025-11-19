@@ -54,66 +54,98 @@ const AddExpense = () => {
   return (
     <div className="page">
       <NavBar />
-      <section className="card" style={{ marginTop: "2rem", maxWidth: 600 }}>
-        <h2>Add Expense</h2>
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <label>
-            Category
-            <select name="category" value={form.category} onChange={handleChange} style={inputStyle}>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </label>
+      <section style={{ marginTop: "2rem", maxWidth: "600px", margin: "2rem auto 0" }}>
+        <div className="card">
+          <h2 style={{ margin: "0 0 0.5rem 0", fontSize: "1.75rem", fontWeight: 700 }}>Add Expense</h2>
+          <p style={{ color: "#64748b", margin: "0 0 1.5rem 0", fontSize: "0.95rem" }}>
+            Record a new expense to track your spending.
+          </p>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            <label style={labelStyle}>
+              <span style={labelTextStyle}>Category</span>
+              <select name="category" value={form.category} onChange={handleChange} style={inputStyle}>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label>
-            Amount (€)
-            <input name="amount" type="number" min="0" step="0.01" required value={form.amount} onChange={handleChange} style={inputStyle} />
-          </label>
+            <label style={labelStyle}>
+              <span style={labelTextStyle}>Amount (€)</span>
+              <input name="amount" type="number" min="0" step="0.01" required value={form.amount} onChange={handleChange} style={inputStyle} />
+            </label>
 
-          <label>
-            Description
-            <textarea name="description" rows={3} value={form.description} onChange={handleChange} style={{ ...inputStyle, resize: "vertical" }} />
-          </label>
+            <label style={labelStyle}>
+              <span style={labelTextStyle}>Description</span>
+              <textarea name="description" rows={3} value={form.description} onChange={handleChange} style={{ ...inputStyle, resize: "vertical", minHeight: "80px" }} />
+            </label>
 
-          <label>
-            Timestamp
-            <input name="timestamp" type="datetime-local" value={form.timestamp.slice(0, 16)} onChange={(e) => setForm({ ...form, timestamp: new Date(e.target.value).toISOString() })} style={inputStyle} />
-          </label>
+            <label style={labelStyle}>
+              <span style={labelTextStyle}>Timestamp</span>
+              <input name="timestamp" type="datetime-local" value={form.timestamp.slice(0, 16)} onChange={(e) => setForm({ ...form, timestamp: new Date(e.target.value).toISOString() })} style={inputStyle} />
+            </label>
 
-          {status.message && (
-            <p style={{ color: status.variant === "success" ? "var(--success)" : "var(--danger)" }}>
-              {status.message}
-            </p>
-          )}
+            {status.message && (
+              <div style={{
+                padding: "0.875rem 1rem",
+                borderRadius: "8px",
+                background: status.variant === "success" ? "#f0fdf4" : "#fef2f2",
+                border: `1px solid ${status.variant === "success" ? "#86efac" : "#fca5a5"}`,
+                color: status.variant === "success" ? "#16a34a" : "#dc2626",
+                fontSize: "0.9rem",
+                fontWeight: 500,
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}>
+                <span>{status.message}</span>
+              </div>
+            )}
 
-          <button type="submit" style={buttonStyle}>
-            Save Expense
-          </button>
-        </form>
+            <button type="submit" style={buttonStyle}>
+              Save Expense
+            </button>
+          </form>
+        </div>
       </section>
     </div>
   );
 };
 
+const labelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.5rem",
+};
+
+const labelTextStyle = {
+  fontSize: "0.875rem",
+  fontWeight: 500,
+  color: "#475569",
+};
+
 const inputStyle = {
   width: "100%",
-  padding: "0.85rem",
-  borderRadius: 12,
+  padding: "0.75rem 1rem",
+  borderRadius: "8px",
   border: "1px solid #e2e8f0",
-  marginTop: "0.35rem",
+  fontSize: "0.95rem",
+  transition: "all 0.2s",
+  outline: "none",
 };
 
 const buttonStyle = {
-  padding: "0.9rem",
-  borderRadius: 999,
+  padding: "0.875rem 1.5rem",
+  borderRadius: "8px",
   border: "none",
   background: "var(--primary)",
   color: "#fff",
   fontWeight: 600,
   cursor: "pointer",
+  fontSize: "0.95rem",
+  transition: "all 0.2s",
 };
 
 export default AddExpense;

@@ -46,19 +46,19 @@ const NotificationCenter = ({ month, onClose }) => {
       danger: {
         background: "#fef2f2",
         border: "1px solid #fca5a5",
-        icon: "⚠️",
+        icon: "!",
         color: "#dc2626",
       },
       warning: {
         background: "#fffbeb",
         border: "1px solid #fcd34d",
-        icon: "⚡",
+        icon: "!",
         color: "#d97706",
       },
       info: {
         background: "#eff6ff",
         border: "1px solid #93c5fd",
-        icon: "ℹ️",
+        icon: "i",
         color: "#2563eb",
       },
       success: {
@@ -95,7 +95,21 @@ const NotificationCenter = ({ month, onClose }) => {
             >
               <div style={contentStyle}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
-                  <span style={{ fontSize: "1.2rem" }}>{style.icon}</span>
+                  <div style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    background: style.color,
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 700,
+                    fontSize: "0.875rem",
+                    flexShrink: 0,
+                  }}>
+                    {style.icon}
+                  </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, color: style.color, marginBottom: "0.25rem" }}>
                       {notification.title}
@@ -123,21 +137,22 @@ const NotificationCenter = ({ month, onClose }) => {
 
 const containerStyle = {
   position: "fixed",
-  top: "80px",
+  top: "90px",
   right: "20px",
-  width: "400px",
-  maxHeight: "600px",
+  width: "420px",
+  maxHeight: "650px",
   background: "#fff",
-  borderRadius: "12px",
-  boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+  borderRadius: "16px",
+  boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
   zIndex: 1000,
   display: "flex",
   flexDirection: "column",
   overflow: "hidden",
+  border: "1px solid #e2e8f0",
 };
 
 const headerStyle = {
-  padding: "1rem",
+  padding: "1.25rem 1.5rem",
   borderBottom: "1px solid #e2e8f0",
   display: "flex",
   justifyContent: "space-between",
@@ -166,13 +181,14 @@ const listStyle = {
 };
 
 const notificationStyle = {
-  padding: "0.75rem",
-  borderRadius: "8px",
-  marginBottom: "0.5rem",
+  padding: "1rem",
+  borderRadius: "12px",
+  marginBottom: "0.75rem",
   display: "flex",
   alignItems: "flex-start",
-  gap: "0.5rem",
+  gap: "0.75rem",
   position: "relative",
+  transition: "all 0.2s",
 };
 
 const contentStyle = {
