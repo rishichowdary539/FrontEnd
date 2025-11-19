@@ -76,7 +76,6 @@ export const settingsAPI = {
   getScheduler: () => api.get("/settings/scheduler"),
   startScheduler: () => api.post("/settings/scheduler/start"),
   stopScheduler: () => api.post("/settings/scheduler/stop"),
-  updateSchedule: (schedule) => api.put("/settings/scheduler/schedule", schedule),
   getThresholds: () => api.get("/settings/thresholds"),
   updateThresholds: (thresholds) => api.put("/settings/thresholds", { thresholds }),
 };

@@ -9,8 +9,6 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [schedule, setSchedule] = useState({ day: 1, hour: 6, minute: 0 });
-  const [isUpdating, setIsUpdating] = useState(false);
   const [thresholds, setThresholds] = useState({});
   const [isUpdatingThresholds, setIsUpdatingThresholds] = useState(false);
 
@@ -33,13 +31,6 @@ const Settings = () => {
         
         const schedulerData = schedulerResponse.data;
         setSchedulerStatus(schedulerData);
-        if (schedulerData.schedule) {
-          setSchedule({
-            day: schedulerData.schedule.day || 1,
-            hour: schedulerData.schedule.hour || 6,
-            minute: schedulerData.schedule.minute || 0,
-          });
-        }
         
         const thresholdsData = thresholdsResponse.data;
         setThresholds(thresholdsData.thresholds || {});
@@ -64,55 +55,32 @@ const Settings = () => {
     setSuccess("");
     try {
       const response = await settingsAPI.startScheduler();
-      setSuccess(response.data.message || "Scheduler started successfully");
-      setSchedulerStatus(response.data.status);
-      // Refresh status
+      setSuccess("Monthly reports enabled. You will receive email reports on the 1st day of each month at 00:00 UTC.");
+      // Refresh status to get updated state
       const statusResponse = await settingsAPI.getScheduler();
       setSchedulerStatus(statusResponse.data);
     } catch (err) {
-      setError(err.response?.data?.detail || "Failed to start scheduler");
+      setError(err.response?.data?.detail || "Failed to enable monthly reports");
     }
   };
 
   const handleStop = async () => {
     setError("");
     setSuccess("");
-    if (!window.confirm("Are you sure you want to stop the scheduler? Monthly reports will not run automatically.")) {
+    if (!window.confirm("Are you sure you want to disable monthly reports? You will not receive monthly report emails.")) {
       return;
     }
     try {
       const response = await settingsAPI.stopScheduler();
-      setSuccess(response.data.message || "Scheduler stopped successfully");
-      setSchedulerStatus({ running: false });
+      setSuccess("Monthly reports disabled. You will not receive email reports.");
+      // Refresh status to get updated state
+      const statusResponse = await settingsAPI.getScheduler();
+      setSchedulerStatus(statusResponse.data);
     } catch (err) {
-      setError(err.response?.data?.detail || "Failed to stop scheduler");
+      setError(err.response?.data?.detail || "Failed to disable monthly reports");
     }
   };
 
-  const handleUpdateSchedule = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setIsUpdating(true);
-    try {
-      const response = await settingsAPI.updateSchedule(schedule);
-      setSuccess(response.data.message || "Schedule updated successfully");
-      // Refresh status
-      const statusResponse = await settingsAPI.getScheduler();
-      setSchedulerStatus(statusResponse.data);
-      if (statusResponse.data.schedule) {
-        setSchedule({
-          day: statusResponse.data.schedule.day || schedule.day,
-          hour: statusResponse.data.schedule.hour || schedule.hour,
-          minute: statusResponse.data.schedule.minute || schedule.minute,
-        });
-      }
-    } catch (err) {
-      setError(err.response?.data?.detail || "Failed to update schedule");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
 
   const handleThresholdChange = (category, value) => {
     setThresholds({
@@ -139,6 +107,7 @@ const Settings = () => {
     }
   };
 
+
   return (
     <div className="page">
       <NavBar />
@@ -163,20 +132,20 @@ const Settings = () => {
             <div className="card">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 600 }}>Scheduler Status</h3>
+                  <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 600 }}>Monthly Reports</h3>
                   <p style={{ color: "#64748b", fontSize: "0.875rem", margin: "0.25rem 0 0 0" }}>
-                    Control automatic monthly report generation
+                    Enable or disable automatic monthly report emails. Reports run on the 1st day of each month at 00:00 UTC.
                   </p>
                 </div>
-                <div style={{ display: "flex", gap: "0.75rem" }}>
+                <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
                   <button
                     onClick={handleStart}
-                    disabled={schedulerStatus?.running}
+                    disabled={schedulerStatus?.enabled}
                     style={{
                       ...buttonStyle,
-                      background: schedulerStatus?.running ? "#cbd5e1" : "var(--success)",
-                      cursor: schedulerStatus?.running ? "not-allowed" : "pointer",
-                      opacity: schedulerStatus?.running ? 0.6 : 1,
+                      background: schedulerStatus?.enabled ? "#cbd5e1" : "var(--success)",
+                      cursor: schedulerStatus?.enabled ? "not-allowed" : "pointer",
+                      opacity: schedulerStatus?.enabled ? 0.6 : 1,
                       transition: "all 0.2s",
                     }}
                   >
@@ -184,12 +153,12 @@ const Settings = () => {
                   </button>
                   <button
                     onClick={handleStop}
-                    disabled={!schedulerStatus?.running}
+                    disabled={!schedulerStatus?.enabled}
                     style={{
                       ...buttonStyle,
-                      background: !schedulerStatus?.running ? "#cbd5e1" : "var(--danger)",
-                      cursor: !schedulerStatus?.running ? "not-allowed" : "pointer",
-                      opacity: !schedulerStatus?.running ? 0.6 : 1,
+                      background: !schedulerStatus?.enabled ? "#cbd5e1" : "var(--danger)",
+                      cursor: !schedulerStatus?.enabled ? "not-allowed" : "pointer",
+                      opacity: !schedulerStatus?.enabled ? 0.6 : 1,
                       transition: "all 0.2s",
                     }}
                   >
@@ -213,98 +182,41 @@ const Settings = () => {
                       Status
                     </div>
                     <div style={{
-                      color: schedulerStatus.running ? "var(--success)" : "var(--danger)",
+                      color: schedulerStatus.enabled ? "var(--success)" : "var(--danger)",
                       fontWeight: 600,
                       fontSize: "1.1rem"
                     }}>
-                      {schedulerStatus.running ? "● Running" : "● Stopped"}
+                      {schedulerStatus.enabled ? "● Enabled" : "● Disabled"}
+                    </div>
+                    {!schedulerStatus.enabled && (
+                      <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "0.25rem" }}>
+                        You will not receive monthly report emails
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                      Schedule
+                    </div>
+                    <div style={{ fontWeight: 600, fontSize: "1.1rem" }}>
+                      1st day at 00:00 UTC
+                    </div>
+                    <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "0.25rem" }}>
+                      Monthly
                     </div>
                   </div>
-                  {schedulerStatus.schedule && (
-                    <>
-                      <div>
-                        <div style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
-                          Schedule
-                        </div>
-                        <div style={{ fontWeight: 600, fontSize: "1.1rem" }}>
-                          Day {schedulerStatus.schedule.day} at {String(schedulerStatus.schedule.hour).padStart(2, '0')}:{String(schedulerStatus.schedule.minute).padStart(2, '0')} UTC
-                        </div>
+                  {schedulerStatus.schedule && schedulerStatus.schedule.next_run && (
+                    <div>
+                      <div style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                        Next Run
                       </div>
-                      {schedulerStatus.schedule.next_run && (
-                        <div>
-                          <div style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
-                            Next Run
-                          </div>
-                          <div style={{ fontWeight: 500, fontSize: "0.95rem" }}>
-                            {new Date(schedulerStatus.schedule.next_run).toLocaleString()}
-                          </div>
-                        </div>
-                      )}
-                    </>
+                      <div style={{ fontWeight: 500, fontSize: "0.95rem" }}>
+                        {new Date(schedulerStatus.schedule.next_run).toLocaleString()}
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
-            </div>
-
-            <div className="card">
-              <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1.25rem", fontWeight: 600 }}>Update Schedule</h3>
-              <p style={{ color: "#64748b", fontSize: "0.875rem", margin: "0 0 1.5rem 0" }}>
-                Configure when the monthly reports should run. Format: Day of month (1-31), Hour (0-23), Minute (0-59) in UTC.
-              </p>
-              <form onSubmit={handleUpdateSchedule} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
-                  <label style={labelStyle}>
-                    <span style={labelTextStyle}>Day of Month</span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="31"
-                      value={schedule.day}
-                      onChange={(e) => setSchedule({ ...schedule, day: parseInt(e.target.value) || 1 })}
-                      style={inputStyle}
-                      required
-                    />
-                  </label>
-                  <label style={labelStyle}>
-                    <span style={labelTextStyle}>Hour (UTC)</span>
-                    <input
-                      type="number"
-                      min="0"
-                      max="23"
-                      value={schedule.hour}
-                      onChange={(e) => setSchedule({ ...schedule, hour: parseInt(e.target.value) || 0 })}
-                      style={inputStyle}
-                      required
-                    />
-                  </label>
-                  <label style={labelStyle}>
-                    <span style={labelTextStyle}>Minute</span>
-                    <input
-                      type="number"
-                      min="0"
-                      max="59"
-                      value={schedule.minute}
-                      onChange={(e) => setSchedule({ ...schedule, minute: parseInt(e.target.value) || 0 })}
-                      style={inputStyle}
-                      required
-                    />
-                  </label>
-                </div>
-                <button
-                  type="submit"
-                  disabled={isUpdating}
-                  style={{
-                    ...buttonStyle,
-                    background: isUpdating ? "#cbd5e1" : "var(--primary)",
-                    cursor: isUpdating ? "not-allowed" : "pointer",
-                    opacity: isUpdating ? 0.6 : 1,
-                    alignSelf: "flex-start",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {isUpdating ? "Updating..." : "Update Schedule"}
-                </button>
-              </form>
             </div>
 
             <div className="card">
